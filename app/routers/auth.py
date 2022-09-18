@@ -8,7 +8,7 @@ from app import schemas, models, utils, oauth2
 router = APIRouter(tags=["Authentication"])
 
 
-@router.post("/login", status_code=status.HTTP_302_FOUND)
+@router.post("/login")
 def login(login_details: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(
         models.User.email == login_details.username).first()
@@ -22,4 +22,4 @@ def login(login_details: OAuth2PasswordRequestForm = Depends(), db: Session = De
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
     access_token = oauth2.create_access_token(data={"user_id": user.id})
-    return {"access_token": access_token, "type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer"}

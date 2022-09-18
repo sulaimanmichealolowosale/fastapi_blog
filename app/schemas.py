@@ -4,9 +4,9 @@ from pydantic import BaseModel, EmailStr
 
 
 class PostBase(BaseModel):
-    title:str
-    body:str
-    published:Optional[bool] = True
+    title: str
+    body: str
+    published: Optional[bool] = True
 
 
 class CreateUser(BaseModel):
@@ -41,3 +41,12 @@ class TokenData(BaseModel):
 
 class CreatePost(PostBase):
     pass
+
+
+class GetPost(PostBase):
+    id: int
+    created_at: datetime
+    owner: GetUser
+
+    class Config:
+        orm_mode = True

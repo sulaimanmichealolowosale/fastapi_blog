@@ -13,6 +13,7 @@ class CreateUser(BaseModel):
     email: EmailStr
     username: str
     password: str
+    role: Optional[str] = "regular"
 
 
 class GetUser(BaseModel):
@@ -43,6 +44,14 @@ class CreatePost(PostBase):
     pass
 
 
+class Comment(BaseModel):
+    body: str
+
+
+class CommentStatus(BaseModel):
+    approved: bool
+
+
 class GetPost(PostBase):
     id: int
     created_at: datetime
@@ -50,3 +59,17 @@ class GetPost(PostBase):
 
     class Config:
         orm_mode = True
+
+
+class GetComment(BaseModel):
+    id: int
+    body: str
+    username: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+# class PostWithComment(BaseModel):
+#     post:GetPost

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 
@@ -7,6 +7,11 @@ class PostBase(BaseModel):
     title: str
     body: str
     published: Optional[bool] = True
+
+
+class CategoryBase(BaseModel):
+    name: str
+    description: Optional[str] = ""
 
 
 class CreateUser(BaseModel):
@@ -40,6 +45,20 @@ class TokenData(BaseModel):
     id: Optional[int] = None
 
 
+class AddCategory(CategoryBase):
+    pass
+
+
+class GetCategory(CategoryBase):
+    id: int
+    owner_id: int
+    created_at: datetime
+    owner: GetUser
+
+    class Config:
+        orm_mode = True
+
+
 class CreatePost(PostBase):
     pass
 
@@ -64,12 +83,16 @@ class GetPost(PostBase):
 class GetComment(BaseModel):
     id: int
     body: str
-    username: str
+    user_id: int
     created_at: datetime
+    owner: GetUser
 
     class Config:
         orm_mode = True
 
 
-# class PostWithComment(BaseModel):
-#     post:GetPost
+class PostWithComment(GetPost):
+    comments: List[GetComment] = []
+
+class PostsByCategory(GetCategory):
+    posts:List[GetPost]=[]

@@ -46,7 +46,7 @@ class TokenData(BaseModel):
 
 
 class AddCategory(CategoryBase):
-    pass
+    pass 
 
 
 class GetCategory(CategoryBase):

@@ -13,7 +13,7 @@ def create_post(post: schemas.CreatePost, db: Session = Depends(get_db), current
 
     existing_post = db.query(models.Post).filter(
         models.Post.title == post.title).first()
-        
+
     if existing_post != None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"A post with the title: {post.title} already exist ")

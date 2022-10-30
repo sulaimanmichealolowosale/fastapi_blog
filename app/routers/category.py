@@ -1,4 +1,3 @@
-from unicodedata import category
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -35,7 +34,7 @@ def get_categories(db: Session = Depends(get_db), current_user: int = Depends(oa
     category = db.query(models.Category).all()
     return category
 
-
+ 
 @router.get("/{category_id}", response_model=schemas.PostsByCategory)
 def get_category(category_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     category = db.query(models.Category).join(models.Post, models.Category.id == models.Post.category_id,

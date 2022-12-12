@@ -7,10 +7,11 @@ class PostBase(BaseModel):
     title: str
     body: str
     published: Optional[bool] = True
+    category_id: int
 
 
 class CategoryBase(BaseModel):
-    name: str
+    title: str
     description: Optional[str] = ""
 
 
@@ -46,7 +47,8 @@ class TokenData(BaseModel):
 
 
 class AddCategory(CategoryBase):
-    pass 
+    
+    pass
 
 
 class GetCategory(CategoryBase):
@@ -94,5 +96,6 @@ class GetComment(BaseModel):
 class PostWithComment(GetPost):
     comments: List[GetComment] = []
 
+
 class PostsByCategory(GetCategory):
-    posts:List[GetPost]=[]
+    posts: List[GetPost] = []

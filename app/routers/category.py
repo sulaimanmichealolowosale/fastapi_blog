@@ -10,18 +10,35 @@ router = APIRouter(
 )
 
 
+@router.get("/", response_model=List[schemas.GetCategory])
+def fetch_all(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    categories = db.query(models.Category).all()
+    return categories
+
+
+@router.get("/{id}", response_model=schemas.PostsByCategory)
+def fetch_single(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+
+    category = db.query(models.Category).join(models.Post, models.Category.id == models.Post.category_id,
+                                              isouter=True).filter(models.Category.id == id).group_by(models.Category.id).first()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"A category with the id: {id} does not exist ")
+    return category
+
+
 @router.post("/", response_model=schemas.GetCategory)
-def add_category(category: schemas.AddCategory, db: Session = Depends(get_db),
-                 current_user: int = Depends(oauth2.get_current_admin_user)):
+def add_new(category: schemas.AddCategory, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
 
     existing_category = db.query(models.Category).filter(
-        models.Category.name == category.name).first()
+        models.Category.title == category.title).first()
 
-    if existing_category != None:
+    if existing_category is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"A category with the name: {category.name} already exist ")
 
-    new_category = models.Category(owner_id=current_user.id, **category.dict())
+    new_category = models.Category(
+        owner_id=current_user.id, **category.dict())
 
     db.add(new_category)
     db.commit()
@@ -29,37 +46,37 @@ def add_category(category: schemas.AddCategory, db: Session = Depends(get_db),
     return new_category
 
 
-@router.get("/", response_model=List[schemas.GetCategory])
-def get_categories(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    category = db.query(models.Category).all()
-    return category
-
- 
-@router.get("/{category_id}", response_model=schemas.PostsByCategory)
-def get_category(category_id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    category = db.query(models.Category).join(models.Post, models.Category.id == models.Post.category_id,
-                                              isouter=True).filter(models.Category.id == category_id).group_by(models.Category.id).first()
-    if category == None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"A category with the id: {category_id} already exist ")
-    return category
-
-
-@router.put("/{category_id}", response_model=schemas.GetCategory)
-def update_category(category_id: int, update_category: schemas.AddCategory, db: Session = Depends(get_db),
+@router.put("/{id}", response_model=schemas.GetCategory)
+def update_category(id: int, category: schemas.AddCategory, db: Session = Depends(get_db),
                     current_user: int = Depends(oauth2.get_current_admin_user)):
 
-    category_query = db.query(models.Category).filter(
-        models.Category.id == category_id)
-    category = category_query.first()
+    category_query = db.query(models.Category).filter(models.Category.id == id)
+    category_result = category_query.first()
 
-    if category == None:
+    if category_result is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"A category with the id: {category_id} already exist ")
-    if category.owner_id != current_user.id:
+                            detail=f"A category with the id: {id} already exist ")
+    if category_result.owner_id is not current_user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="You are not authorized to perform the requested action")
+                            detail="You are not authorized to perform the categoryed action")
 
-    category_query.update(update_category.dict(), synchronize_session=False)
+    category_query.update(category.dict(), synchronize_session=False)
     db.commit()
     return category_query.first()
+
+
+@router.delete("/{id}")
+def delete_category(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
+    category_query = db.query(models.Category).filter(models.Category.id == id)
+    category_rersult = category_query.first()
+
+    if category_rersult is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail=f"A category with the id: {id} does not exist ")
+    if category_rersult.owner_id is not current_user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="You are not authorized to perform the categoryed action")
+    category_query.delete(synchronize_session=False)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+

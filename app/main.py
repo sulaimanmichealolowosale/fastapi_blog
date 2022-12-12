@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from .routers import user, auth, post, comment, category
 
-
 app = FastAPI()
 
-app.include_router(user.router)
-app.include_router(auth.router)
-app.include_router(post.router)
-app.include_router(comment.router)
-app.include_router(category.router)
+
+class Route:
+    def __init__(self, *args):
+        [app.include_router(key.router) for key in args]
+
+
+auth_route = Route(auth, user, post, comment, category)
 
 
 @app.get("/")

@@ -10,10 +10,10 @@ class User(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     email = Column(String, nullable=False, unique=True)
     username = Column(String, nullable=False, unique=True)
-    role = Column(String, nullable=False)
-    password = Column(String, nullable=False, server_default="regular")
+    role = Column(String, nullable=False, server_default="regular")
+    password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
-                        nullable=False, server_default=text('now()'))
+                        nullable=False, server_default=text('CURRENT_TIMESTAMP'))
 
 
 class Comment(Base):
@@ -28,7 +28,7 @@ class Comment(Base):
     body = Column(String, nullable=False)
     approved = Column(Boolean, nullable=False, server_default="False")
     created_at = Column(TIMESTAMP(timezone=True),
-                        nullable=False, server_default=text('now()'))
+                        nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     owner = relationship("User")
 
 
@@ -43,7 +43,7 @@ class Post(Base):
     body = Column(String, nullable=False)
     published = Column(Boolean, nullable=False, server_default="TRUE")
     created_at = Column(TIMESTAMP(timezone=True),
-                        nullable=False, server_default=text('now()'))
+                        nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     owner = relationship("User")
     category = relationship("Category")
     comments = relationship("Comment")
@@ -52,11 +52,11 @@ class Post(Base):
 class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
+    title = Column(String, nullable=False)
     owner_id = Column(Integer, ForeignKey(
         "users.id", ondelete="CASCADE"), nullable=False)
     description = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True),
-                        nullable=False, server_default=text('now()'))
-    posts = relationship("Post")
+                        nullable=False, server_default=text('CURRENT_TIMESTAMP'))
+    posts = relationship("Post", overlaps="category")
     owner = relationship("User")

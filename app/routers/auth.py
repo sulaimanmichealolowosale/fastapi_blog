@@ -13,7 +13,7 @@ def login(login_details: OAuth2PasswordRequestForm = Depends(), db: Session = De
     user = db.query(models.User).filter(
         models.User.email == login_details.username).first()
 
-    if not user:
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
 

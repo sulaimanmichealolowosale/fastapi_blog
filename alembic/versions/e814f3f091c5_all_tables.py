@@ -1,8 +1,8 @@
-"""all-tables
+"""all tables
 
-Revision ID: ed0abc5103b4
+Revision ID: e814f3f091c5
 Revises: 
-Create Date: 2022-12-07 07:16:13.186908
+Create Date: 2022-12-15 13:36:54.447154
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ed0abc5103b4'
+revision = 'e814f3f091c5'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -44,7 +44,7 @@ def upgrade() -> None:
     sa.Column('owner_id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('body', sa.String(), nullable=False),
-    sa.Column('published', sa.Boolean(), server_default='TRUE', nullable=False),
+    sa.Column('published', sa.Boolean(), server_default='1', nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ondelete='CASCADE'),
@@ -55,7 +55,7 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('post_id', sa.Integer(), nullable=False),
     sa.Column('body', sa.String(), nullable=False),
-    sa.Column('approved', sa.Boolean(), server_default='False', nullable=False),
+    sa.Column('approved', sa.Boolean(), server_default='0', nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['post_id'], ['posts.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),

@@ -26,7 +26,7 @@ class Comment(Base):
         "posts.id", ondelete="CASCADE"), nullable=False)
 
     body = Column(String, nullable=False)
-    approved = Column(Boolean, nullable=False, server_default="False")
+    approved = Column(Boolean, nullable=False, server_default="0")
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     owner = relationship("User")
@@ -41,11 +41,10 @@ class Post(Base):
         "users.id", ondelete="CASCADE"), nullable=False)
     title = Column(String, nullable=False)
     body = Column(String, nullable=False)
-    published = Column(Boolean, nullable=False, server_default="TRUE")
+    published = Column(Boolean, nullable=False, server_default="1")
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     owner = relationship("User")
-    category = relationship("Category")
     comments = relationship("Comment")
 
 
@@ -58,5 +57,5 @@ class Category(Base):
     description = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))
-    posts = relationship("Post", overlaps="category")
+    posts = relationship("Post")
     owner = relationship("User")

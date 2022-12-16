@@ -35,7 +35,7 @@ def add_new(category: schemas.AddCategory, db: Session = Depends(get_db), curren
 
     if existing_category is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"A category with the name: {category.name} already exist ")
+                            detail=f"A category with the name: {category.title} already exist ")
 
     new_category = models.Category(
         owner_id=current_user.id, **category.dict())
@@ -54,8 +54,9 @@ def update_category(id: int, category: schemas.AddCategory, db: Session = Depend
     category_result = category_query.first()
 
     if category_result is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"A category with the id: {id} already exist ")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"A category with id: {id} does not exists")
+
     if category_result.owner_id is not current_user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="You are not authorized to perform the categoryed action")
@@ -71,11 +72,13 @@ def delete_category(id: int, db: Session = Depends(get_db), current_user: int = 
     category_rersult = category_query.first()
 
     if category_rersult is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"A category with the id: {id} does not exist ")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"A category with id: {id} does not exists")
+
     if category_rersult.owner_id is not current_user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="You are not authorized to perform the categoryed action")
+
     category_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

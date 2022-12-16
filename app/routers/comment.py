@@ -44,7 +44,7 @@ def update_comment(comment_id: int, update_comment: schemas.Comment, db: Session
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Comment with id: {comment_id} does not exist")
 
-    if comment.user_id != current_user.id:
+    if comment.user_id is not current_user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="You are not authorized to perform the requested action")
 
@@ -79,7 +79,8 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db),
     if comment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Comment with id: {comment_id} does not exists ")
-    if current_user.id != comment.user_id:
+                            
+    if current_user.id is not comment.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You are not authorised to perform the requested action")
     comment_query.delete(synchronize_session=False)

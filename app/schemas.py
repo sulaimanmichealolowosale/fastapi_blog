@@ -86,6 +86,7 @@ class GetComment(BaseModel):
     id: int
     body: str
     user_id: int
+    approved:bool
     created_at: datetime
     owner: GetUser
 

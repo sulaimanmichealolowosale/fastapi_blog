@@ -17,7 +17,7 @@ def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
     existing_user = db.query(models.User).filter(
         models.User.email == user.email or models.User.username == user.username).first()
 
-    if existing_user:
+    if existing_user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Either the username or the Email already exists")
 
@@ -37,7 +37,7 @@ def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
 @router.get("/{id}", response_model=schemas.GetUser, status_code=status.HTTP_302_FOUND)
 def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
     user = db.query(models.User).filter(models.User.id == id).first()
-    if not user:
+    if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"User with id: {id} is not found ")
+                            detail=f"User with id: {id} was not found ")
     return user

@@ -53,6 +53,6 @@ def get_current_admin_user(token: str = Depends(oauth2_scheme), db:Session=Depen
     token = verify_access_token(token, credentials_exception)
     user = db.query(models.User).filter(models.User.id == token.id).first()    
     if user.role != "admin":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized  to view requested page")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view requested page")
 
     return user

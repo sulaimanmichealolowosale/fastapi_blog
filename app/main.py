@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import user, auth, post, comment, category
+from .routers import user, auth, post, comment, category, like, tag
 
 app = FastAPI()
 
@@ -9,7 +9,7 @@ class Route:
         [app.include_router(key.router) for key in args]
 
 
-auth_route = Route(auth, user, post, comment, category)
+auth_route = Route(auth, user, post, category, tag, comment, like)
 
 
 @app.get("/")

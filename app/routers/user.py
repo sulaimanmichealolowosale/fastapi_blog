@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
-from app import schemas, utils, models, oauth2
+from app import utils, models, oauth2
+from app.schemas.user import *
 from app.database import get_db
 
 router = APIRouter(
@@ -9,8 +10,8 @@ router = APIRouter(
 )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.GetUser)
-def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=GetUser)
+def manage_users(user: CreateUser, db: Session = Depends(get_db)):
     hashed_password = utils.password_hash(user.password)
 
     user.password = hashed_password
@@ -28,16 +29,34 @@ def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.get("/", response_model=list[schemas.GetUser])
-def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
+@router.get("/", response_model=list[GetUser])
+def manage_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
+
+    if current_user.role != "superadmin":
+        users = db.query(models.User).filter(
+            models.User.id == current_user.id).all()
+        return users
+
     users = db.query(models.User).all()
     return users
 
 
-@router.get("/{id}", response_model=schemas.GetUser, status_code=status.HTTP_302_FOUND)
-def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
+@router.get("/user-id={id}", response_model=GetUser, status_code=status.HTTP_302_FOUND)
+def manage_users(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
     user = db.query(models.User).filter(models.User.id == id).first()
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"User with id: {id} was not found ")
+
+    utils.check_if_found(user, id, name="User")
+
+    utils.verify_super_admin(current_user)
+
     return user
+
+
+@router.delete("/user-id={id}")
+def manage_users(id: int, current_user: int = Depends(oauth2.get_current_admin_user), db: Session = Depends(get_db)):
+    user_query = db.query(models.User).filter(models.User.id == id)
+    user_result = user_query.first()
+
+    utils.check_if_found(user_result, id, name="User")
+
+    utils.verify_super_admin(current_user)

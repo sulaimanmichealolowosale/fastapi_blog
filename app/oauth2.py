@@ -2,7 +2,8 @@ from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from datetime import datetime, timedelta
-from app import models, schemas
+from app import models, utils
+from app.schemas.oauth2 import *
 from fastapi import Depends, HTTPException, status
 from app.database import get_db
 from sqlalchemy.orm import Session
@@ -31,7 +32,7 @@ def verify_access_token(token: str, credentials_exception):
         if id is None:
             raise credentials_exception
 
-        token_data = schemas.TokenData(id=id)
+        token_data = TokenData(id=id)
     except JWTError:
         raise credentials_exception
 
@@ -42,17 +43,17 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                           detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
     token = verify_access_token(token, credentials_exception)
-    user = db.query(models.User).filter(models.User.id == token.id).first()    
+    user = db.query(models.User).filter(models.User.id == token.id).first()
     return user
 
 
-def get_current_admin_user(token: str = Depends(oauth2_scheme), db:Session=Depends(get_db)):
+def get_current_admin_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
 
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                           detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
     token = verify_access_token(token, credentials_exception)
-    user = db.query(models.User).filter(models.User.id == token.id).first()    
-    if user.role != "admin":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view requested page")
-
+    user = db.query(models.User).filter(models.User.id == token.id).first()
+    if user.role != "admin" and user.role != utils.super_admin:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="You are not authorized to view requested page")
     return user

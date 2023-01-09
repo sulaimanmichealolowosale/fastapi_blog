@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from .database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
+from sqlalchemy_utils import URLType
 
 
 class User(Base):
@@ -16,11 +17,10 @@ class User(Base):
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))
 
 
-
 class CommentReply(Base):
     __tablename__ = "comment_replies"
     id = Column(Integer, primary_key=True, nullable=False)
-    body=Column(String, nullable=False)
+    body = Column(String, nullable=False)
     comment_id = Column(Integer, ForeignKey(
         "comments.id", ondelete="CASCADE"), nullable=False)
     post_id = Column(Integer, ForeignKey(
@@ -31,6 +31,7 @@ class CommentReply(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     owner = relationship("User")
+
 
 class Comment(Base):
     __tablename__ = "comments"
@@ -61,6 +62,7 @@ class Post(Base):
     title = Column(String, nullable=False)
     body = Column(String, nullable=False)
     published = Column(Boolean, nullable=False, server_default=text("0"))
+    image_url = Column(URLType)
     likes = Column(Integer, nullable=False, server_default=text('0'))
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))

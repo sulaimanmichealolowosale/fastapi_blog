@@ -1,8 +1,17 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .routers import user, auth, post, comment, category, like, tag
 
+origin=["http://localhost:3000"]
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origin,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 class Route:
     def __init__(self, *args):

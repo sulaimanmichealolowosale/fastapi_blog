@@ -15,9 +15,14 @@ class PostBase(BaseModel):
 class CreatePost(PostBase):
     pass
 
+class UpdatePost(PostBase):
+    image_url:Optional[str]
+    pass
+
 
 class GetPost(PostBase):
     id: int
+    image_url:str
     created_at: datetime
     likes: int
     owner: GetUser

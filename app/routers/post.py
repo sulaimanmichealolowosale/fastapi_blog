@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status, HTTPException, Response, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
 from app import models, oauth2, utils
 from app.schemas.post import *
+import shutil
 
 router = APIRouter(tags=["Posts"], prefix="/posts")
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=GetPost)
-def manage_posts(post: CreatePost, db: Session = Depends(get_db),
+def manage_posts(post: CreatePost = Depends(), file: UploadFile = File(...), db: Session = Depends(get_db),
                  current_user: int = Depends(oauth2.get_current_admin_user)):
-
     existing_post = db.query(models.Post).filter(
         models.Post.title == post.title).first()
 
@@ -24,7 +24,16 @@ def manage_posts(post: CreatePost, db: Session = Depends(get_db),
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"A post with the title: {post.title} already exist ")
 
-    new_post = models.Post(owner_id=current_user.id, **post.dict())
+    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"the file: {file.filename} is not an image file")
+
+    with open("media/"+file.filename, "wb") as image:
+        shutil.copyfileobj(file.file, image)
+    image_url = "media/"+file.filename
+
+    new_post = models.Post(owner_id=current_user.id,
+                           image_url=image_url, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -52,7 +61,7 @@ def manage_posts(id: int, db: Session = Depends(get_db), current_user: int = Dep
 
 
 @router.put("/post-id={id}", response_model=GetPost, status_code=status.HTTP_201_CREATED)
-def manage_posts(post: CreatePost, id: int, db: Session = Depends(get_db),
+def manage_posts(id: int, post: UpdatePost = Depends(), file: UploadFile = File(...), db: Session = Depends(get_db),
                  current_user: int = Depends(oauth2.get_current_admin_user)):
 
     post_query = db.query(models.Post).filter(models.Post.id == id)
@@ -76,7 +85,15 @@ def manage_posts(post: CreatePost, id: int, db: Session = Depends(get_db),
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You are not authorised to perform the requested action")
 
-    post_query.update(post.dict(), synchronize_session=False)
+    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"the file: {file.filename} is not an image file")
+
+    with open("media/"+file.filename, "wb") as image:
+        shutil.copyfileobj(file.file, image)
+    image_url = "media/"+file.filename
+    post.image_url=image_url
+    post_query.update(post.dict() ,synchronize_session=False)
     db.commit()
     return post_query.first()
 

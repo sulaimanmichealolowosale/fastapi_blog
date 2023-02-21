@@ -41,17 +41,11 @@ def manage_users(user: CreateUser, db: Session = Depends(get_db)):
 def manage_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
 
     if current_user.role != "superadmin":
-        users = db.query(models.User).filter(
-            models.User.id == current_user.id).first()
-        return users
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="You are not authorized to perform the requested action")
 
     users = db.query(models.User).all()
     return users
-
-
-# @router.get("/get-cookies")
-# def get_cookies(token: Optional[str] = Cookie(None), host: Optional[str] = Header(None)):
-#     return {"token": token, "host": host}
 
 
 @router.get("/user-id={id}", response_model=GetUser, status_code=status.HTTP_302_FOUND)
@@ -59,7 +53,6 @@ def manage_users(id: int, db: Session = Depends(get_db), current_user: int = Dep
     user = db.query(models.User).filter(models.User.id == id).first()
 
     utils.check_if_found(user, id, name="User")
-
     utils.verify_super_admin(current_user)
 
     return user

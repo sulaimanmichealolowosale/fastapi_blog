@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     database_username: str
     database_name: str
     secret_key: str
+    authjwt_secret_key:str
+    authjwt_token_location:set={"cookies"}
     algorithm: str
     access_token_expire_minutes: int
 
@@ -15,4 +17,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

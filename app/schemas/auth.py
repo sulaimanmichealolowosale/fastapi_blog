@@ -11,4 +11,5 @@ class Token(BaseModel):
     email:EmailStr
     role:str
     access_token: str
+    refresh_token: str
     token_type: str

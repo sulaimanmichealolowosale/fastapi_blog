@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from .database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
-from sqlalchemy_utils import URLType
 
 
 class User(Base):
@@ -62,7 +61,7 @@ class Post(Base):
     title = Column(String, nullable=False)
     body = Column(String, nullable=False)
     published = Column(Boolean, nullable=False, server_default=text("0"))
-    image_url = Column(URLType)
+    image_url = Column(String, nullable=False)
     likes = Column(Integer, nullable=False, server_default=text('0'))
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('CURRENT_TIMESTAMP'))

@@ -37,7 +37,7 @@ def manage_users(user: CreateUser, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.get("/", response_model=list[GetUser])
+@router.get("/", response_model=List[GetUser])
 def manage_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin_user)):
 
     if current_user.role != "superadmin":
